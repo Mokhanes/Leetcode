@@ -4,11 +4,8 @@ class Solution {
         Set<Integer> count = new HashSet<>();
 
         for(int i : nums){
-            if(count.contains(i)){
+            if(!count.add(i))
                 return true;
-            }else{
-                count.add(i);
-            }
         }
 
         return false;
