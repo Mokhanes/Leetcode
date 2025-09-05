@@ -12,7 +12,7 @@
  *         this.right = right;
  *     }
  * }
- */
+ *
 class Solution {
     public List<String> binaryTreePaths(TreeNode root) {
       
@@ -40,5 +40,32 @@ class Solution {
 
         dfs(root.left,path,result);
         dfs(root.right,path,result);
+    }
+}
+*/
+
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> ans = new ArrayList<>();
+        StringBuilder res = new StringBuilder();
+        paths(root, ans, res);
+        return ans;
+    }
+
+    public void paths(TreeNode node, List<String> ans, StringBuilder res) {
+        if (node == null) return;
+
+        int len = res.length(); 
+        res.append(node.val);
+
+        if (node.left == null && node.right == null) {
+            ans.add(res.toString()); 
+        } else {
+            res.append("->"); 
+            paths(node.left, ans, res);
+            paths(node.right, ans, res);
+        }
+
+        res.setLength(len);
     }
 }
