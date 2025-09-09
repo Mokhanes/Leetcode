@@ -16,7 +16,7 @@ class Solution {
 
             seen.add(c);
 
-            maxLength = Math.max(seen.size(),maxLength);
+            maxLength = Math.max(end-start+1,maxLength);
             end++;
         }
 
