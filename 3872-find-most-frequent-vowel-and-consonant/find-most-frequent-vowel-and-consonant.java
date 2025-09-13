@@ -1,30 +1,26 @@
-import java.util.*;
-
 public class Solution {
     public static int maxFreqSum(String s) {
-        Map<Character, Integer> vowelMap = new HashMap<>();
-        Map<Character, Integer> consonantMap = new HashMap<>();
+        int[] freq = new int[26];  // frequency for each letter
+        int maxVowel = 0, maxConsonant = 0;
 
         for (int i = 0; i < s.length(); i++) {
             char ch = Character.toLowerCase(s.charAt(i));
-            if (!Character.isLetter(ch)) continue; // skip non-letters
+            if (ch < 'a' || ch > 'z') continue; // skip non-letters
+
+            int idx = ch - 'a';
+            freq[idx]++;
 
             if (isVowel(ch)) {
-                vowelMap.put(ch, vowelMap.getOrDefault(ch, 0) + 1);
+                if (freq[idx] > maxVowel) maxVowel = freq[idx];
             } else {
-                consonantMap.put(ch, consonantMap.getOrDefault(ch, 0) + 1);
+                if (freq[idx] > maxConsonant) maxConsonant = freq[idx];
             }
         }
 
-        int maxVowelFreq = vowelMap.values().stream().max(Integer::compare).orElse(0);
-        int maxConsonantFreq = consonantMap.values().stream().max(Integer::compare).orElse(0);
-
-        return maxVowelFreq + maxConsonantFreq;
+        return maxVowel + maxConsonant;
     }
 
     private static boolean isVowel(char ch) {
-        return "aeiou".indexOf(ch) != -1;
+        return ch=='a' || ch=='e' || ch=='i' || ch=='o' || ch=='u';
     }
-
-    
 }
