@@ -1,0 +1,16 @@
+class Solution {
+    public int maxProfit(int[] prices) {
+        int byprices = Integer.MAX_VALUE;
+        int maxprofit = 0;
+
+        for(int p : prices){
+            if(p < byprices) byprices = p;
+            else{
+                int profit = p - byprices;
+                if(profit > maxprofit) maxprofit = profit;
+            }
+        }
+
+        return maxprofit;
+    }
+}
