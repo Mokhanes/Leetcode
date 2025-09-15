@@ -7,7 +7,7 @@ class Solution {
             if(p < byprices) byprices = p;
             else{
                 int profit = p - byprices;
-                if(profit > maxprofit) maxprofit = profit;
+                maxprofit = Math.max(profit,maxprofit);
             }
         }
 
