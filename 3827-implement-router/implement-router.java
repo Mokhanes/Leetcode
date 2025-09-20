@@ -1,124 +1,91 @@
-import java.util.*;
+class Router {
+    private final int size;
+    private final Map<Integer, List<Integer>> counts;
+    private final Map<Long, int[]> packets;
+    private final Queue<Long> queue;
 
-public class Router {
-    private int memoryLimit;
-    // To detect duplicates
-    private Set<Packet> uniquePackets;
-    // To maintain FIFO order
-    private Queue<Packet> packetQueue;
-    // For each destination, list of timestamps (sorted in non-decreasing order)
-    private Map<Integer, List<Integer>> destTimestamps;
-    // For each destination, how many timestamps have been removed / forwarded already,
-    // so we don't count those in getCount
-    private Map<Integer, Integer> processedCount;
-
-    public Router(int memoryLimit) {
-        this.memoryLimit = memoryLimit;
-        this.uniquePackets = new HashSet<>();
-        this.packetQueue = new LinkedList<>();
-        this.destTimestamps = new HashMap<>();
-        this.processedCount = new HashMap<>();
+    public Router(final int memoryLimit) {
+        this.size = memoryLimit;
+        this.packets = new HashMap<>();
+        this.counts = new HashMap<>();
+        this.queue = new LinkedList<>();
     }
 
-    public boolean addPacket(int source, int destination, int timestamp) {
-        Packet p = new Packet(source, destination, timestamp);
-        if (uniquePackets.contains(p)) {
+    public boolean addPacket(final int source, final int destination, final int timestamp) {
+        final long key = encode(source, destination, timestamp);
+
+        if(packets.containsKey(key))
             return false;
-        }
-        if (packetQueue.size() == memoryLimit) {
-            forwardPacket();  // remove oldest
-        }
-        // Add new packet
-        packetQueue.offer(p);
-        uniquePackets.add(p);
-        destTimestamps
-            .computeIfAbsent(destination, k -> new ArrayList<>())
-            .add(timestamp);
-        // ensure processedCount has an entry
-        processedCount.putIfAbsent(destination, 0);
+
+        if(packets.size() >= size)
+            forwardPacket();
+
+        packets.put(key, new int[] { source, destination, timestamp });
+        queue.offer(key);
+
+        counts.putIfAbsent(destination, new ArrayList<>());
+        counts.get(destination).add(timestamp);
+
         return true;
     }
 
-    public List<Integer> forwardPacket() {
-        if (packetQueue.isEmpty()) {
-            return Collections.emptyList();
-        }
-        Packet oldest = packetQueue.poll();
-        uniquePackets.remove(oldest);
-        int dest = oldest.destination;
-        int ts = oldest.timestamp;
-        // logically remove this timestamp from count for that destination
-        // We will not remove from the list (expensive), but maintain a processedCount to skip
-        processedCount.put(dest, processedCount.getOrDefault(dest, 0) + 1);
-        return Arrays.asList(oldest.source, oldest.destination, oldest.timestamp);
+    public int[] forwardPacket() {
+        if(packets.isEmpty())
+            return new int[] {};
+
+        final long key = queue.poll();
+        final int[] packet = packets.remove(key);
+
+        if(packet == null)
+            return new int[]{};
+
+        final int destination = packet[1];
+        final List<Integer> list = counts.get(destination);
+
+        list.remove(0);
+
+        return packet;
     }
 
-    public int getCount(int destination, int startTime, int endTime) {
-        List<Integer> timestamps = destTimestamps.get(destination);
-        if (timestamps == null) {
+    public int getCount(final int destination, final int startTime, final int endTime) {
+        final List<Integer> list = counts.get(destination);
+        if(list == null || list.isEmpty())
             return 0;
-        }
-        int startIdx = processedCount.getOrDefault(destination, 0);
-        // binary search for left boundary ≥ startTime
-        int left = firstGreaterEqual(timestamps, startIdx, startTime);
-        // binary search for right boundary > endTime
-        int right = firstGreater(timestamps, startIdx, endTime);
+
+        final int left = lowerBound(list, startTime);
+        final int right = upperBound(list, endTime);
+
         return right - left;
     }
 
-    // Helper binary search: first index ≥ target, in timestamps[startIdx .. end)
-    private int firstGreaterEqual(List<Integer> list, int startIdx, int target) {
-        int lo = startIdx, hi = list.size();
-        while (lo < hi) {
-            int mid = lo + (hi - lo) / 2;
-            if (list.get(mid) >= target) {
-                hi = mid;
-            } else {
-                lo = mid + 1;
-            }
-        }
-        return lo;
+    private long encode(final int source, final int destination, final int timestamp) {
+        return ((long)source << 40) | ((long)destination << 20) | timestamp;
     }
 
-    // Helper: first index > target
-    private int firstGreater(List<Integer> list, int startIdx, int target) {
-        int lo = startIdx, hi = list.size();
-        while (lo < hi) {
-            int mid = lo + (hi - lo) / 2;
-            if (list.get(mid) > target) {
-                hi = mid;
-            } else {
-                lo = mid + 1;
-            }
+    private int lowerBound(final List<Integer> list, final int target) {
+        int low = 0, high = list.size();
+
+        while(low < high) {
+            final int mid = (low + high) >>> 1;
+            if(list.get(mid) < target) low = mid + 1;
+            else high = mid;
         }
-        return lo;
+
+        return low;
     }
 
-    // Packet class with equals + hashCode for duplicates
-    private static class Packet {
-        int source;
-        int destination;
-        int timestamp;
+    private int upperBound(final List<Integer> list, final int target) {
+        int low = 0, high = list.size();
 
-        public Packet(int source, int destination, int timestamp) {
-            this.source = source;
-            this.destination = destination;
-            this.timestamp = timestamp;
+        while(low < high) {
+            final int mid = (low + high) >>> 1;
+
+            if(list.get(mid) <= target)
+                low = mid + 1;
+            else
+                high = mid;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Packet other = (Packet) o;
-            return source == other.source
-                && destination == other.destination
-                && timestamp == other.timestamp;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(source, destination, timestamp);
-        }
+        return low;
     }
 }
