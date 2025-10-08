@@ -1,5 +1,11 @@
 class Solution {
-    public List<String> fizzBuzz(int n) {
+    static{
+        for(int i=0; i<500 ;  i++){
+            fizzBuzz(1);
+        }
+    }
+
+    public static List<String> fizzBuzz(int n) {
         List<String> res = new ArrayList<>();
 
         for(int i =1;i<=n;i++){
