@@ -4,28 +4,22 @@ class Solution {
         double maxArea = 0.0;
         
         for (int i = 0; i < n; i++) {
-            int x1 = points[i][0];
-            int y1 = points[i][1];
             for (int j = i + 1; j < n; j++) {
-                int x2 = points[j][0];
-                int y2 = points[j][1];
                 for (int k = j + 1; k < n; k++) {
-                    int x3 = points[k][0];
-                    int y3 = points[k][1];
-                    
-                    // compute cross product magnitude
-                    double area = Math.abs(
-                        (x2 - x1) * (y3 - y1)
-                      - (x3 - x1) * (y2 - y1)
-                    ) / 2.0;
-                    
-                    if (area > maxArea) {
-                        maxArea = area;
-                    }
+                    double area = area(points[i], points[j], points[k]);
+                    maxArea = Math.max(maxArea, area);
                 }
             }
         }
         
         return maxArea;
+    }
+    
+    private double area(int[] A, int[] B, int[] C) {
+        return 0.5 * Math.abs(
+            A[0] * (B[1] - C[1]) +
+            B[0] * (C[1] - A[1]) +
+            C[0] * (A[1] - B[1])
+        );
     }
 }
