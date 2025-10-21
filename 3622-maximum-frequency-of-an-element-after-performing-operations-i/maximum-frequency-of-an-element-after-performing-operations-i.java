@@ -1,36 +1,35 @@
-import java.util.*;
-
 class Solution {
     public int maxFrequency(int[] nums, int k, int numOperations) {
-        
-        Map<Integer, Integer> count = new HashMap<>();
-        
-        TreeMap<Integer, Integer> line = new TreeMap<>();
-        
-        Set<Integer> candidates = new TreeSet<>();
+       int max = 0, min = Integer.MAX_VALUE;
 
-        for (int v : nums) {
-            count.merge(v, 1, Integer::sum);
-            int start = v - k;
-            int end   = v + k + 1;
-            line.merge(start, 1, Integer::sum);
-            line.merge(end,   -1, Integer::sum);
-            candidates.add(v);
-            candidates.add(start);
-            candidates.add(end);
+        for (int i : nums) {
+            max = Math.max(max, i);
+            min = Math.min(min, i);
         }
 
-        int adjustable = 0;
-        int ans = 1;
-
-        for (int x : candidates) {
-            adjustable += line.getOrDefault(x, 0);
-            int cntX = count.getOrDefault(x, 0);
-            int canAdjust = adjustable - cntX;       
-            int useOps    = Math.min(numOperations, canAdjust);
-            ans = Math.max(ans, cntX + useOps);
+        int[] freq = new int[max + 1];
+        int[] prefix = new int[max + 1];
+        for (int i : nums) {
+            freq[i]++;
         }
-
+        for (int i = min; i <= max; i++) {
+            prefix[i] = prefix[i - 1] + freq[i];
+        }
+        int ans = 0;
+        for (int i = min; i <= max; i++) {
+            int low = 0;
+            if (i - k - 1 > 0) {
+                low = prefix[i - k - 1];
+            }
+            int high = 0;
+            if (i + k <= max) {
+                high = prefix[i + k];
+            } else {
+                high = prefix[max];
+            }
+            int toChange = high - low - freq[i];
+            ans = Math.max(ans, freq[i] + (toChange >= numOperations ? numOperations : toChange));
+        }
         return ans;
     }
 }
