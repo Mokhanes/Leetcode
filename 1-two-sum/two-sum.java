@@ -7,6 +7,7 @@ class Solution {
             if(nums[i] + nums[j] == t){
                 r[0] = i;
                 r[1] = j;
+                return r;
             }
         }
        }
