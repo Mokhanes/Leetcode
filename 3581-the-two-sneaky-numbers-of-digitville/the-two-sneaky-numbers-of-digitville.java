@@ -1,22 +1,19 @@
 class Solution {
-    public int[] getSneakyNumbers(int[] nums) {
-        Map<Integer,Integer> map = new HashMap<>();
-
-        for(int num : nums){
-            map.put(num , map.getOrDefault(num,0)+1);
-        }
-        List<Integer> li = new ArrayList<>();
-        for(Map.Entry<Integer,Integer> entery : map.entrySet()){
-            if(entery.getValue() == 2){
-                li.add(entery.getKey());
+    public int[] getSneakyNumbers(int[] a) 
+    {
+        int[] freq=new int[101];
+        Arrays.fill(freq,0);
+        for(int i:a)
+            freq[i]++;
+        int[] ans=new int[2];
+        int ctr=0;
+        for(int i=0;i<=100;i++)
+        {
+            if(freq[i]==2)
+            {
+                ans[ctr++]=i;
             }
-        }
-
-        int res[] = new int[li.size()];
-        int i = 0;
-        for(int num : li)
-            res[i++] = num;
-
-        return res; 
+        }    
+        return ans;
     }
 }
