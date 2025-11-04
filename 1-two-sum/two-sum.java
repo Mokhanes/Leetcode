@@ -1,4 +1,3 @@
-//sol 1 : 2 layer for loops then target - nums[i] then target - nums[j] == 0; return arr;
 
 class Solution {
     public int[] twoSum(int[] nums, int target) {
