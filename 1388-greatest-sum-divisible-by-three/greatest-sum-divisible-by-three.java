@@ -1,30 +1,42 @@
 class Solution {
     public int maxSumDivThree(int[] nums) {
         int sum = 0;
-        List<Integer> mod1 = new ArrayList<>();
-        List<Integer> mod2 = new ArrayList<>();
+        int min1 = Integer.MAX_VALUE, secondMin1 = Integer.MAX_VALUE;
+        int min2 = Integer.MAX_VALUE, secondMin2 = Integer.MAX_VALUE;
 
         for (int n : nums) {
             sum += n;
-            if (n % 3 == 1) mod1.add(n);
-            else if (n % 3 == 2) mod2.add(n);
+            int r = n % 3;
+            if (r == 1) {
+                if (n < min1) {
+                    secondMin1 = min1;
+                    min1 = n;
+                } else if (n < secondMin1) {
+                    secondMin1 = n;
+                }
+            } else if (r == 2) {
+                if (n < min2) {
+                    secondMin2 = min2;
+                    min2 = n;
+                } else if (n < secondMin2) {
+                    secondMin2 = n;
+                }
+            }
         }
 
-        if (sum % 3 == 0) return sum;
-
-        Collections.sort(mod1);
-        Collections.sort(mod2);
-
-        int option1 = Integer.MAX_VALUE;
-        int option2 = Integer.MAX_VALUE;
         int remainder = sum % 3;
+        if (remainder == 0) return sum;
+
+        int option1 = Integer.MAX_VALUE, option2 = Integer.MAX_VALUE;
 
         if (remainder == 1) {
-            if (!mod1.isEmpty()) option1 = mod1.get(0);
-            if (mod2.size() >= 2) option2 = mod2.get(0) + mod2.get(1);
+            option1 = min1;
+            if (min2 != Integer.MAX_VALUE && secondMin2 != Integer.MAX_VALUE)
+                option2 = min2 + secondMin2;
         } else {
-            if (!mod2.isEmpty()) option1 = mod2.get(0);
-            if (mod1.size() >= 2) option2 = mod1.get(0) + mod1.get(1);
+            option1 = min2;
+            if (min1 != Integer.MAX_VALUE && secondMin1 != Integer.MAX_VALUE)
+                option2 = min1 + secondMin1;
         }
 
         return sum - Math.min(option1, option2);
